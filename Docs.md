@@ -333,4 +333,40 @@ cd /home/hadoop
 wget https://repo1.maven.org/maven2/org/mongodb/spark/mongo-spark-connector_2.12/3.0.2/mongo-spark-connector_2.12-3.0.2.jar
 
 echo "MongoDB Spark Connector downloaded!"
+
+mongo --eval "rs.initiate({
+  _id: 'rs0',
+  members: [
+    { _id: 0, host: 'hadoop-master:27017' },
+    { _id: 1, host: 'hadoop-worker1:27017' },
+    { _id: 2, host: 'hadoop-worker2:27017' }
+  ]
+})"
+
+```
+
+
+## Working
+
+```
+vagrant ssh master
+
+sudo su - hadoop
+
+# Start HDFS (NameNode and DataNodes)
+$HADOOP_HOME/sbin/start-dfs.sh
+
+# Start YARN (ResourceManager and NodeManagers)
+$HADOOP_HOME/sbin/start-yarn.sh
+
+for node in hadoop-worker1 hadoop-worker2; do
+  ssh hadoop@$node "$HADOOP_HOME/sbin/hadoop-daemon.sh start datanode && $HADOOP_HOME/sbin/yarn-daemon.sh start nodemanager && jps"
+done
+
+$SPARK_HOME/bin/spark-submit \
+  --master yarn \
+  --deploy-mode client \
+  --packages org.mongodb.spark:mongo-spark-connector_2.12:10.1.1 \
+  mood_of_city.py
+
 ```

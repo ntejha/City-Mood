@@ -15,6 +15,10 @@ Vagrant.configure("2") do |config|
   config.vm.box = "ubuntu/focal64"
   config.vm.box_check_update = false
 
+    # Add this inside Vagrant.configure block but outside the node definitions
+  config.vm.synced_folder "/home/ntejha/Music/Projects/City-Mood/project", "/home/hadoop/project", owner: "hadoop", group: "hadoop", mount_options: ["dmode=775,fmode=664"]
+
+
   # Common provisioning for all nodes
   config.vm.provision "shell", inline: <<-SHELL
     # Update system
